@@ -38,6 +38,7 @@ export class InvadersSquadron {
     for (let column = 0; column < this.columns; column++) {
       for (let row = 0; row < this.rows; row++) {
         const invader = new Invader({
+          parentSquadron: this,
           position: {
             x: column * this.invaderCellWidth,
             y: row * this.invaderCellWidth
@@ -68,8 +69,9 @@ export class InvadersSquadron {
   }
 
   updateInvaders() {
-    this.invaders.forEach(invader => {
+    this.invaders.forEach((invader, index) => {
       invader.velocity = this.velocity;
+      invader.indexInTheSquadron = index;
       invader.update();
     });
   }
