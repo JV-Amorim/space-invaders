@@ -102,10 +102,6 @@ class Player {
   }
 
   draw() {
-    if (!this.image) {
-      return;
-    }
-
     canvas.save();
 
     canvas.translate(
@@ -177,6 +173,68 @@ class Projectile {
       return;
     }
 
+    this.draw();
+  }
+}
+
+class Invader {
+  width = undefined;
+  height = undefined;
+  image = undefined;
+  position = { x: undefined, y: undefined };
+  velocity = { x: 0, y: 0 };
+
+  constructor() {
+    const image = this.loadInvaderImage();
+    this.setInitialPropertiesAfterImageLoaded(image);
+  }
+
+  loadInvaderImage() {
+    const image = new Image();
+    image.src = './assets/invader.png';
+    return image;
+  }
+
+  setInitialPropertiesAfterImageLoaded(image) {
+    image.onload = () => {
+      this.setInitialSize(image);
+      this.setInitialPosition();
+      this.image = image;
+    };
+  }
+
+  setInitialSize(image) {
+    this.width = image.width;
+    this.height = image.height;
+  }
+
+  setInitialPosition() {
+    this.position = {
+      x: canvasElement.width / 2 - this.width / 2,
+      y: canvasElement.height / 2
+    };
+  }
+
+  updatePositionAccordingToVelocity() {
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+
+  draw() {
+    canvas.drawImage(
+      this.image,
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    );
+  }
+
+  update() {
+    if (!this.image) {
+      return;
+    }
+    this.updatePositionAccordingToVelocity();
     this.draw();
   }
 }
