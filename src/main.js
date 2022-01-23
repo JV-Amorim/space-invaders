@@ -10,8 +10,14 @@ canvasElement.height = window.innerHeight;
 export const player = new Player();
 export const invadersSquadronsSpawner = new InvadersSquadronsSpawner();
 
-window.addEventListener('keyup', ({ key }) => player.handleKeyPressEvent(key, 'up'));
-window.addEventListener('keydown', ({ key }) => player.handleKeyPressEvent(key, 'down'));
+window.addEventListener('keyup', ({ key }) => {
+  player.handleKeyPressEvent(key, 'up');
+});
+window.addEventListener('keydown', ({ key, repeat }) => {
+  if (!repeat) {
+    player.handleKeyPressEvent(key, 'down');
+  }
+});
 
 function animate() {
   window.requestAnimationFrame(animate);
