@@ -1,4 +1,4 @@
-import { canvasElement, canvas, projectiles } from './main.js';
+import { canvasElement, canvas } from './main.js';
 import { Projectile } from './projectile.js';
 
 export class Player {
@@ -12,6 +12,7 @@ export class Player {
     a: { pressed: false },
     d: { pressed: false }
   };
+  projectiles = [];
 
   constructor() {
     const image = this.loadPlayerImage();
@@ -61,6 +62,7 @@ export class Player {
 
   shootProjectile() {
     const projectile = new Projectile({
+      player: this,
       position: {
         x: this.position.x + this.width / 2,
         y: this.position.y
@@ -70,7 +72,7 @@ export class Player {
         y: -10
       }
     });
-    projectiles.push(projectile);
+    this.projectiles.push(projectile);
   }
 
   updateVelocityAndRotation() {
@@ -96,6 +98,13 @@ export class Player {
     else if (this.position.x + this.width > canvasElement.width) {
       this.position.x = canvasElement.width - this.width;
     }
+  }
+
+  updateProjectiles() {
+    this.projectiles.forEach((projectile, index) => {
+      projectile.indexInTheProjectilesArray = index;
+      projectile.update();
+    });
   }
 
   draw() {
@@ -128,6 +137,7 @@ export class Player {
     }
     this.updateVelocityAndRotation();
     this.updatePosition();
+    this.updateProjectiles();
     this.draw();
   }
 }

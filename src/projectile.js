@@ -1,18 +1,20 @@
-import { canvas, projectiles } from './main.js';
+import { canvas } from './main.js';
 
 export class Projectile {
+  player = undefined;
   position = { x: undefined, y: undefined };
   velocity = { x: undefined, y: undefined };
   radius = 3;
   indexInTheProjectilesArray = 0;
 
-  constructor({ position, velocity }) {
+  constructor({ player, position, velocity }) {
+    this.player = player;
     this.position = position;
     this.velocity = velocity;
   }
 
   destroyProjectile() {
-    projectiles.splice(this.indexInTheProjectilesArray, 1);
+    this.player.projectiles.splice(this.indexInTheProjectilesArray, 1);
   }
 
   updatePosition() {
