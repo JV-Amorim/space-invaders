@@ -62,7 +62,7 @@ export class Player {
 
   shootProjectile() {
     const projectile = new Projectile({
-      player: this,
+      owner: this,
       position: {
         x: this.position.x + this.width / 2,
         y: this.position.y
