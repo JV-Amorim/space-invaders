@@ -76,7 +76,7 @@ class Player {
     projectiles.push(projectile);
   }
 
-  updateVelocityAndRotationAccordingToPressedKeys() {
+  updateVelocityAndRotation() {
     if (this.keyBindings.a.pressed) {
       this.velocity.x = -7;
       this.rotation = -0.15;
@@ -91,7 +91,7 @@ class Player {
     this.rotation = 0;
   }
 
-  updatePositionAccordingToVelocity() {
+  updatePosition() {
     this.position.x += this.velocity.x;
     if (this.position.x < 0) {
       this.position.x = 0;
@@ -129,8 +129,8 @@ class Player {
     if (!this.image) {
       return;
     }
-    this.updateVelocityAndRotationAccordingToPressedKeys();
-    this.updatePositionAccordingToVelocity();
+    this.updateVelocityAndRotation();
+    this.updatePosition();
     this.draw();
   }
 }
@@ -150,6 +150,11 @@ class Projectile {
     projectiles.splice(this.indexInTheProjectilesArray, 1);
   }
 
+  updatePosition() {
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+
   draw() {
     canvas.beginPath();
     canvas.arc(
@@ -165,8 +170,7 @@ class Projectile {
   }
 
   update() {
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
+    this.updatePosition();
 
     if (this.position.y + this.radius < 0) {
       this.destroyProjectile();
@@ -184,7 +188,8 @@ class Invader {
   position = { x: undefined, y: undefined };
   velocity = { x: 0, y: 0 };
 
-  constructor() {
+  constructor({ position }) {
+    this.position = position;
     const image = this.loadInvaderImage();
     this.setInitialPropertiesAfterImageLoaded(image);
   }
@@ -198,7 +203,6 @@ class Invader {
   setInitialPropertiesAfterImageLoaded(image) {
     image.onload = () => {
       this.setInitialSize(image);
-      this.setInitialPosition();
       this.image = image;
     };
   }
@@ -208,14 +212,7 @@ class Invader {
     this.height = image.height;
   }
 
-  setInitialPosition() {
-    this.position = {
-      x: canvasElement.width / 2 - this.width / 2,
-      y: canvasElement.height / 2
-    };
-  }
-
-  updatePositionAccordingToVelocity() {
+  updatePosition() {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
   }
@@ -234,8 +231,88 @@ class Invader {
     if (!this.image) {
       return;
     }
-    this.updatePositionAccordingToVelocity();
+    this.updatePosition();
     this.draw();
+  }
+}
+
+class InvadersSquadron {
+  width = undefined;
+  height = undefined;
+  position = { x: 0, y: 0 };
+  velocity = { x: 3, y: 0 };
+  invaders = [];
+  invaderCellWidth = 30;
+  minRows = 3;
+  maxRows = 5;
+  minColumns = 8;
+  maxColumns = 12;
+  rows = undefined;
+  columns = undefined;
+
+  constructor() {
+    this.setRandomQuantityOfRowsAndColumns();
+    this.calculateGridWidthAndHeight();
+    this.instantiateInvaders();
+  }
+
+  setRandomQuantityOfRowsAndColumns() {
+    this.rows = Math.floor(Math.random() * this.maxRows);
+    this.rows = this.rows >= this.minRows ? this.rows : this.minRows;
+
+    this.columns = Math.floor(Math.random() * this.maxColumns);
+    this.columns = this.columns >= this.minColumns ? this.columns : this.minColumns;
+  }
+
+  calculateGridWidthAndHeight() {
+    this.width = this.columns * this.invaderCellWidth;
+    this.height = this.rows * this.invaderCellWidth;
+  }
+
+  instantiateInvaders() {
+    for (let column = 0; column < this.columns; column++) {
+      for (let row = 0; row < this.rows; row++) {
+        const invader = new Invader({
+          position: {
+            x: column * this.invaderCellWidth,
+            y: row * this.invaderCellWidth
+          }
+        });
+        this.invaders.push(invader);
+      }
+    }
+  }
+
+  updateVelocity() {
+    const isToReverseVelocityAndPushTheGridDown =
+      this.position.x < 0 ||
+      this.position.x + this.width >= canvasElement.width;
+
+    if (isToReverseVelocityAndPushTheGridDown) {
+      this.velocity.x = -this.velocity.x;
+      this.velocity.y = 30;
+    }
+    else {
+      this.velocity.y = 0;
+    }
+  }
+
+  updatePosition() {
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+
+  updateInvaders() {
+    this.invaders.forEach(invader => {
+      invader.velocity = this.velocity;
+      invader.update();
+    });
+  }
+
+  update() {
+    this.updateVelocity();
+    this.updatePosition();
+    this.updateInvaders();
   }
 }
 
@@ -246,14 +323,18 @@ function animate() {
   canvas.fillRect(0, 0, canvasElement.width, canvasElement.height);
 
   player.update();
+
   projectiles.forEach((projectile, index) => {
     projectile.indexInTheProjectilesArray = index;
     projectile.update();
   });
+
+  invadersSquadrons.forEach(invadersSquadron => invadersSquadron.update());
 }
 
 const player = new Player();
 const projectiles = [];
+const invadersSquadrons = [new InvadersSquadron()];
 
 window.addEventListener('keyup', ({ key }) => player.handleKeyPressEvent(key, 'up'));
 window.addEventListener('keydown', ({ key }) => player.handleKeyPressEvent(key, 'down'));
