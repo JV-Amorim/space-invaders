@@ -13,8 +13,7 @@ class Player {
   rotation = 0;
   keyBindings = {
     a: { pressed: false },
-    d: { pressed: false },
-    space: { pressed: false }
+    d: { pressed: false }
   };
 
   constructor() {
@@ -51,16 +50,33 @@ class Player {
 
   handleKeyPressEvent(key, eventType) {
     const isPressed = eventType === 'down';
-    if (key === ' ') {
-      key = 'space';
+
+    if (key === ' ' && isPressed) {
+      this.shootProjectile();
+      return;
     }
+
     const keyToChange = this.keyBindings[key];
     if (keyToChange) {
       keyToChange.pressed = isPressed;
     }
   }
 
-  handleCurrentPressedKeys() {
+  shootProjectile() {
+    const projectile = new Projectile({
+      position: {
+        x: this.position.x + this.width / 2,
+        y: this.position.y
+      },
+      velocity: {
+        x: 0,
+        y: -10
+      }
+    });
+    projectiles.push(projectile);
+  }
+
+  updateVelocityAndRotationAccordingToPressedKeys() {
     if (this.keyBindings.a.pressed) {
       this.velocity.x = -7;
       this.rotation = -0.15;
@@ -117,20 +133,69 @@ class Player {
     if (!this.image) {
       return;
     }
-    this.handleCurrentPressedKeys();
+    this.updateVelocityAndRotationAccordingToPressedKeys();
     this.updatePositionAccordingToVelocity();
+    this.draw();
+  }
+}
+
+class Projectile {
+  position = { x: undefined, y: undefined };
+  velocity = { x: undefined, y: undefined };
+  radius = 3;
+  indexInTheProjectilesArray = 0;
+
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+  }
+
+  destroyProjectile() {
+    projectiles.splice(this.indexInTheProjectilesArray, 1);
+  }
+
+  draw() {
+    canvas.beginPath();
+    canvas.arc(
+      this.position.x,
+      this.position.y,
+      this.radius,
+      0,
+      Math.PI * 2
+    );
+    canvas.fillStyle = 'red';
+    canvas.fill();
+    canvas.closePath();
+  }
+
+  update() {
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+
+    if (this.position.y + this.radius < 0) {
+      this.destroyProjectile();
+      return;
+    }
+
     this.draw();
   }
 }
 
 function animate() {
   window.requestAnimationFrame(animate);
+
   canvas.fillStyle = 'black';
   canvas.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
   player.update();
+  projectiles.forEach((projectile, index) => {
+    projectile.indexInTheProjectilesArray = index;
+    projectile.update();
+  });
 }
 
 const player = new Player();
+const projectiles = [];
 
 window.addEventListener('keyup', ({ key }) => player.handleKeyPressEvent(key, 'up'));
 window.addEventListener('keydown', ({ key }) => player.handleKeyPressEvent(key, 'down'));
