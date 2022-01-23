@@ -1,4 +1,4 @@
-import { canvas, player } from './main.js';
+import { canvas, nextFrameActions, player } from './main.js';
 
 export class Invader {
   parentSquadron = undefined;
@@ -61,8 +61,10 @@ export class Invader {
         isTheProjectileBetweenTheInvaderInY && isTheProjectileBetweenTheInvaderInX;
 
       if (collisionDetected) {
-        projectile.destroyProjectile();
-        this.destroyInvader();
+        nextFrameActions.push(() => {
+          projectile.destroyProjectile();
+          this.destroyInvader();
+        });
       }
     }
   }

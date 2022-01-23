@@ -1,4 +1,4 @@
-import { canvas } from './main.js';
+import { canvas, nextFrameActions } from './main.js';
 
 export class Projectile {
   owner = undefined;
@@ -40,7 +40,7 @@ export class Projectile {
     this.updatePosition();
 
     if (this.position.y + this.radius < 0) {
-      this.destroyProjectile();
+      nextFrameActions.push(() => this.destroyProjectile());
       return;
     }
 
