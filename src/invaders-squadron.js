@@ -1,4 +1,4 @@
-import { canvasElement } from './main.js';
+import { canvasElement, nextFrameActions } from './main.js';
 import { Invader } from './invader.js';
 
 export class InvadersSquadron {
@@ -14,8 +14,11 @@ export class InvadersSquadron {
   maxColumns = 12;
   rows = undefined;
   columns = undefined;
+  destroySquadronCallback = undefined;
+  indexInTheSpawner = undefined;
 
-  constructor() {
+  constructor(destroySquadronCallback) {
+    this.destroySquadronCallback = destroySquadronCallback;
     this.setRandomQuantityOfRowsAndColumns();
     this.calculateGridWidthAndHeight();
     this.instantiateInvaders();
@@ -51,18 +54,19 @@ export class InvadersSquadron {
 
   destroyInvader(invaderIndex) {
     this.invaders.splice(invaderIndex, 1);
-    this.recalculateGridWidthAfterInvaderDestroyed();
+
+    if (this.invaders.length === 0) {
+      nextFrameActions.push(() => this.destroySquadronCallback(this.indexInTheSpawner));
+    }
+    else {
+      this.recalculateGridWidthAfterInvaderDestroyed();
+    }
   }
 
   recalculateGridWidthAfterInvaderDestroyed() {
     const invadersLength = this.invaders.length;
-
-    if (invadersLength === 0) {
-      return;
-    }
-
-    const firstInvader = this.invaders[0];
     const lastInvader = this.invaders[invadersLength - 1];
+    const firstInvader = this.invaders[0];
 
     this.width = lastInvader.position.x - firstInvader.position.x + this.invaderCellWidth;
     this.position.x = firstInvader.position.x;

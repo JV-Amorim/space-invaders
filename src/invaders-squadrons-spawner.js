@@ -12,7 +12,10 @@ export class InvadersSquadronsSpawner {
   }
 
   instantiateNewInvadersSquadron() {
-    this.invadersSquadrons.push(new InvadersSquadron());
+    const newSquadron = new InvadersSquadron(
+      this.destroyInvadersSquadron.bind(this)
+    );
+    this.invadersSquadrons.push(newSquadron);
   }
 
   generateRandomInstantiationInterval() {
@@ -21,7 +24,11 @@ export class InvadersSquadronsSpawner {
       this.instantiationInterval = this.minInstantiationInterval;
     }
   }
-  
+
+  destroyInvadersSquadron(squadronIndex) {
+    this.invadersSquadrons.splice(squadronIndex, 1);
+  }
+
   handleNewFrame() {
     this.frameCounter++;
 
@@ -33,7 +40,10 @@ export class InvadersSquadronsSpawner {
   }
 
   updateInvadersSquadrons() {
-    this.invadersSquadrons.forEach(invadersSquadron => invadersSquadron.update());
+    this.invadersSquadrons.forEach((squadron, index) => {
+      squadron.indexInTheSpawner = index;
+      squadron.update();
+    });
   }
 
   update() {
