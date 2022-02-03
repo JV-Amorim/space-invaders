@@ -51,7 +51,21 @@ export class InvadersSquadron {
 
   destroyInvader(invaderIndex) {
     this.invaders.splice(invaderIndex, 1);
-    // TODO - Recalculate grid width.
+    this.recalculateGridWidthAfterInvaderDestroyed();
+  }
+
+  recalculateGridWidthAfterInvaderDestroyed() {
+    const invadersLength = this.invaders.length;
+
+    if (invadersLength === 0) {
+      return;
+    }
+
+    const firstInvader = this.invaders[0];
+    const lastInvader = this.invaders[invadersLength - 1];
+
+    this.width = lastInvader.position.x - firstInvader.position.x + this.invaderCellWidth;
+    this.position.x = firstInvader.position.x;
   }
 
   updateVelocity() {
