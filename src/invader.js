@@ -1,17 +1,17 @@
 import { canvas, nextFrameActions, player } from './main.js';
 
 export class Invader {
-  parentSquadron = undefined;
   width = undefined;
   height = undefined;
   image = undefined;
   position = { x: undefined, y: undefined };
   velocity = { x: 0, y: 0 };
-  indexInTheSquadron = 0;
+  destroyInvaderCallback = undefined;
+  indexInTheSquadron = undefined;
 
-  constructor({ parentSquadron, position }) {
-    this.parentSquadron = parentSquadron;
+  constructor({ position, destroyInvaderCallback }) {
     this.position = position;
+    this.destroyInvaderCallback = destroyInvaderCallback;
     const image = this.loadInvaderImage();
     this.setInitialPropertiesAfterImageLoaded(image);
   }
@@ -35,7 +35,7 @@ export class Invader {
   }
 
   destroyInvader() {
-    this.parentSquadron.invaders.splice(this.indexInTheSquadron, 1);
+    this.destroyInvaderCallback(this.indexInTheSquadron);
   }
 
   updatePosition() {
@@ -45,28 +45,35 @@ export class Invader {
 
   detectProjectileCollision() {
     for (const projectile of player.projectiles) {
-      const projectileTop = projectile.position.y - projectile.radius;
-      const projectileLeft = projectile.position.x - projectile.radius;
-      const invaderTop = this.position.y;
-      const invaderBottom = this.position.y + this.height;
-      const invaderLeft = this.position.x;
-      const invaderRight = this.position.x + this.width;
-
-      const isTheProjectileBetweenTheInvaderInY = 
-        projectileTop >= invaderTop && projectileTop <= invaderBottom;
-      const isTheProjectileBetweenTheInvaderInX = 
-        projectileLeft >= invaderLeft && projectileLeft <= invaderRight;
-
-      const collisionDetected =
-        isTheProjectileBetweenTheInvaderInY && isTheProjectileBetweenTheInvaderInX;
+      const collisionDetected = this.doesTheProjectileCollidedToThisInvader(projectile);
 
       if (collisionDetected) {
         nextFrameActions.push(() => {
           projectile.destroyProjectile();
           this.destroyInvader();
         });
+        break;
       }
     }
+  }
+
+  doesTheProjectileCollidedToThisInvader(projectile) {
+    const projectileTop = projectile.position.y - projectile.radius;
+    const projectileLeft = projectile.position.x - projectile.radius;
+    const invaderTop = this.position.y;
+    const invaderBottom = this.position.y + this.height;
+    const invaderLeft = this.position.x;
+    const invaderRight = this.position.x + this.width;
+
+    const isTheProjectileBetweenTheInvaderInY = 
+      projectileTop >= invaderTop && projectileTop <= invaderBottom;
+    const isTheProjectileBetweenTheInvaderInX = 
+      projectileLeft >= invaderLeft && projectileLeft <= invaderRight;
+
+    const collisionDetected =
+      isTheProjectileBetweenTheInvaderInY && isTheProjectileBetweenTheInvaderInX;
+
+    return collisionDetected;
   }
 
   draw() {

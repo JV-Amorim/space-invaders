@@ -1,20 +1,20 @@
 import { canvas, nextFrameActions } from './main.js';
 
 export class Projectile {
-  owner = undefined;
   position = { x: undefined, y: undefined };
   velocity = { x: undefined, y: undefined };
   radius = 3;
-  indexInTheProjectilesArray = 0;
+  destroyProjectileCallback = undefined;
+  indexInTheProjectilesArray = undefined;
 
-  constructor({ owner, position, velocity }) {
-    this.owner = owner;
+  constructor({ position, velocity, destroyProjectileCallback }) {
     this.position = position;
     this.velocity = velocity;
+    this.destroyProjectileCallback = destroyProjectileCallback;
   }
 
   destroyProjectile() {
-    this.owner.projectiles.splice(this.indexInTheProjectilesArray, 1);
+    this.destroyProjectileCallback(this.indexInTheProjectilesArray);
   }
 
   updatePosition() {

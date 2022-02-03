@@ -62,7 +62,6 @@ export class Player {
 
   shootProjectile() {
     const projectile = new Projectile({
-      owner: this,
       position: {
         x: this.position.x + this.width / 2,
         y: this.position.y
@@ -70,9 +69,14 @@ export class Player {
       velocity: {
         x: 0,
         y: -10
-      }
+      },
+      destroyProjectileCallback: this.destroyProjectile.bind(this)
     });
     this.projectiles.push(projectile);
+  }
+
+  destroyProjectile(projectileIndex) {
+    this.projectiles.splice(projectileIndex, 1);
   }
 
   updateVelocityAndRotation() {

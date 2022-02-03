@@ -38,15 +38,20 @@ export class InvadersSquadron {
     for (let column = 0; column < this.columns; column++) {
       for (let row = 0; row < this.rows; row++) {
         const invader = new Invader({
-          parentSquadron: this,
           position: {
             x: column * this.invaderCellWidth,
             y: row * this.invaderCellWidth
-          }
+          },
+          destroyInvaderCallback: this.destroyInvader.bind(this)
         });
         this.invaders.push(invader);
       }
     }
+  }
+
+  destroyInvader(invaderIndex) {
+    this.invaders.splice(invaderIndex, 1);
+    // TODO - Recalculate grid width.
   }
 
   updateVelocity() {
