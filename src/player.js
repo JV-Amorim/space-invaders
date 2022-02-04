@@ -1,5 +1,5 @@
 import { canvasElement, canvas } from './main.js';
-import { Projectile } from './projectile.js';
+import { PlayerProjectile } from './player-projectile.js';
 
 export class Player {
   width = undefined;
@@ -61,7 +61,7 @@ export class Player {
   }
 
   shootProjectile() {
-    const projectile = new Projectile({
+    const projectile = new PlayerProjectile({
       position: {
         x: this.position.x + this.width / 2,
         y: this.position.y
