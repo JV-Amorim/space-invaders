@@ -72,6 +72,14 @@ export class InvadersSquadron {
     this.position.x = firstInvader.position.x;
   }
 
+  shootProjectileFromRandomInvader() {
+    const randomInvaderIndex = Math.floor(Math.random() * this.invaders.length);
+    const randomInvader = this.invaders[randomInvaderIndex];
+    if (randomInvader) {
+      randomInvader.shootInvaderProjectile();
+    }
+  }
+
   updateVelocity() {
     const isToReverseVelocityAndPushTheGridDown =
       this.position.x < 0 ||

@@ -1,4 +1,5 @@
 import { canvas, nextFrameActions, player } from './main.js';
+import { InvaderProjectile } from './invader-projectile.js';
 
 export class Invader {
   width = undefined;
@@ -8,6 +9,7 @@ export class Invader {
   velocity = { x: 0, y: 0 };
   destroyInvaderCallback = undefined;
   indexInTheSquadron = undefined;
+  invaderProjectiles = [];
 
   constructor({ position, destroyInvaderCallback }) {
     this.position = position;
@@ -38,14 +40,40 @@ export class Invader {
     this.destroyInvaderCallback(this.indexInTheSquadron);
   }
 
+  shootInvaderProjectile() {
+    const projectile = new InvaderProjectile({
+      position: {
+        x: this.position.x + this.width / 2,
+        y: this.position.y + this.height
+      },
+      velocity: {
+        x: 0,
+        y: 5
+      },
+      destroyProjectileCallback: this.destroyInvaderProjectile.bind(this)
+    });
+    this.invaderProjectiles.push(projectile);
+  }
+
+  destroyInvaderProjectile(projectileIndex) {
+    this.invaderProjectiles.splice(projectileIndex, 1);
+  }
+
+  updateInvaderProjectiles() {
+    this.invaderProjectiles.forEach((projectile, index) => {
+      projectile.indexInTheProjectilesArray = index;
+      projectile.update();
+    });
+  }
+
   updatePosition() {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
   }
 
-  detectProjectileCollision() {
-    for (const projectile of player.projectiles) {
-      const collisionDetected = this.doesTheProjectileCollidedToThisInvader(projectile);
+  detectCollisionWithPlayerProjectiles() {
+    for (const projectile of player.playerProjectiles) {
+      const collisionDetected = this.doesThePlayerProjectileCollidedToThisInvader(projectile);
 
       if (collisionDetected) {
         nextFrameActions.push(() => {
@@ -57,7 +85,7 @@ export class Invader {
     }
   }
 
-  doesTheProjectileCollidedToThisInvader(projectile) {
+  doesThePlayerProjectileCollidedToThisInvader(projectile) {
     const projectileTop = projectile.position.y - projectile.radius;
     const projectileLeft = projectile.position.x - projectile.radius;
     const invaderTop = this.position.y;
@@ -65,13 +93,13 @@ export class Invader {
     const invaderLeft = this.position.x;
     const invaderRight = this.position.x + this.width;
 
-    const isTheProjectileBetweenTheInvaderInY = 
+    const isTheProjectileWithinTheInvaderInY = 
       projectileTop >= invaderTop && projectileTop <= invaderBottom;
-    const isTheProjectileBetweenTheInvaderInX = 
+    const isTheProjectileWithinTheInvaderInX = 
       projectileLeft >= invaderLeft && projectileLeft <= invaderRight;
 
     const collisionDetected =
-      isTheProjectileBetweenTheInvaderInY && isTheProjectileBetweenTheInvaderInX;
+      isTheProjectileWithinTheInvaderInY && isTheProjectileWithinTheInvaderInX;
 
     return collisionDetected;
   }
@@ -90,8 +118,9 @@ export class Invader {
     if (!this.image) {
       return;
     }
+    this.updateInvaderProjectiles();
     this.updatePosition();
-    this.detectProjectileCollision();
+    this.detectCollisionWithPlayerProjectiles();
     this.draw();
   }
 }

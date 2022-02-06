@@ -1,4 +1,4 @@
-import { canvasElement, canvas } from './main.js';
+import { canvasElement, canvas, invadersSquadronsSpawner, nextFrameActions } from './main.js';
 import { PlayerProjectile } from './player-projectile.js';
 
 export class Player {
@@ -12,7 +12,7 @@ export class Player {
     a: { pressed: false },
     d: { pressed: false }
   };
-  projectiles = [];
+  playerProjectiles = [];
 
   constructor() {
     const image = this.loadPlayerImage();
@@ -50,7 +50,7 @@ export class Player {
     const isPressed = eventType === 'down';
 
     if (key === ' ' && isPressed) {
-      this.shootProjectile();
+      this.shootPlayerProjectile();
       return;
     }
 
@@ -60,7 +60,7 @@ export class Player {
     }
   }
 
-  shootProjectile() {
+  shootPlayerProjectile() {
     const projectile = new PlayerProjectile({
       position: {
         x: this.position.x + this.width / 2,
@@ -70,13 +70,54 @@ export class Player {
         x: 0,
         y: -10
       },
-      destroyProjectileCallback: this.destroyProjectile.bind(this)
+      destroyProjectileCallback: this.destroyPlayerProjectile.bind(this)
     });
-    this.projectiles.push(projectile);
+    this.playerProjectiles.push(projectile);
   }
 
-  destroyProjectile(projectileIndex) {
-    this.projectiles.splice(projectileIndex, 1);
+  destroyPlayerProjectile(projectileIndex) {
+    this.playerProjectiles.splice(projectileIndex, 1);
+  }
+
+  detectCollisionWithInvaderProjectiles() {
+    for (const invadersSquadron of invadersSquadronsSpawner.invadersSquadrons) {
+      for (const invader of invadersSquadron.invaders) {
+        for (const projectile of invader.invaderProjectiles) {
+          const collisionDetected = this.doesTheInvaderProjectileCollidedToPlayer(projectile);
+          if (collisionDetected) {
+            nextFrameActions.push(() => {
+              projectile.destroyProjectile();
+              this.destroyPlayer();
+            });
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  doesTheInvaderProjectileCollidedToPlayer(projectile) {
+    const projectileTop = projectile.position.y;
+    const projectileLeft = projectile.position.x;
+    const playerTop = this.position.y;
+    const playerBottom = this.position.y + this.height;
+    const playerLeft = this.position.x;
+    const playerRight = this.position.x + this.width;
+
+    const isTheProjectileWithinThePlayerInY = 
+      projectileTop >= playerTop && projectileTop <= playerBottom;
+    const isTheProjectileWithinThePlayerInX = 
+      projectileLeft >= playerLeft && projectileLeft <= playerRight;
+
+    const collisionDetected =
+      isTheProjectileWithinThePlayerInY && isTheProjectileWithinThePlayerInX;
+
+    return collisionDetected;
+  }
+
+  destroyPlayer() {
+    // TODO - Destroy the player and show game over screen.
+    console.log("Game Over!");
   }
 
   updateVelocityAndRotation() {
@@ -105,7 +146,7 @@ export class Player {
   }
 
   updateProjectiles() {
-    this.projectiles.forEach((projectile, index) => {
+    this.playerProjectiles.forEach((projectile, index) => {
       projectile.indexInTheProjectilesArray = index;
       projectile.update();
     });
@@ -139,6 +180,7 @@ export class Player {
     if (!this.image) {
       return;
     }
+    this.detectCollisionWithInvaderProjectiles();
     this.updateVelocityAndRotation();
     this.updatePosition();
     this.updateProjectiles();

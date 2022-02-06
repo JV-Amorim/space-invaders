@@ -4,6 +4,7 @@ export class InvadersSquadronsSpawner {
   frameCounter = 0;
   minInstantiationInterval = 500;
   instantiationInterval = undefined;
+  squadronShootingInterval = 100;
   invadersSquadrons = [];
 
   constructor() {
@@ -36,6 +37,10 @@ export class InvadersSquadronsSpawner {
       this.instantiateNewInvadersSquadron();
       this.frameCounter = 0;
       this.generateRandomInstantiationInterval();
+    }
+
+    if (this.frameCounter % this.squadronShootingInterval === 0) {
+      this.invadersSquadrons.forEach(squadron => squadron.shootProjectileFromRandomInvader());
     }
   }
 
