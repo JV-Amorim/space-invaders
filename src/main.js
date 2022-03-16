@@ -9,6 +9,7 @@ canvasElement.height = window.innerHeight;
 
 export const player = new Player();
 export const invadersSquadronsSpawner = new InvadersSquadronsSpawner();
+export const particles = [];
 
 window.addEventListener('keyup', ({ key }) => {
   player.handleKeyPressEvent(key, 'up');
@@ -45,6 +46,7 @@ function animate() {
 
   player.update();
   invadersSquadronsSpawner.update();
+  particles.forEach(particle => particle.update());
 }
 
 animate();

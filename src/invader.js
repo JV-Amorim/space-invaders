@@ -1,5 +1,6 @@
-import { canvas, nextFrameActions, player } from './main.js';
+import { canvas, nextFrameActions, player, particles } from './main.js';
 import { InvaderProjectile } from './invader-projectile.js';
+import { Particle } from './particle.js';
 
 export class Invader {
   width = undefined;
@@ -10,6 +11,7 @@ export class Invader {
   destroyInvaderCallback = undefined;
   indexInTheSquadron = undefined;
   invaderProjectiles = [];
+  explosionParticles = [];
 
   constructor({ position, destroyInvaderCallback }) {
     this.position = position;
@@ -38,6 +40,25 @@ export class Invader {
 
   destroyInvader() {
     this.destroyInvaderCallback(this.indexInTheSquadron);
+    this.instantiateExplosionParticles();
+  }
+
+  instantiateExplosionParticles() {
+    for (let i = 0; i < 15; i++) {
+      const newParticle = new Particle({
+        position: {
+          x: this.position.x + this.width / 2,
+          y: this.position.y + this.height / 2
+        },
+        velocity: {
+          x: (Math.random() - 0.5) * 2,
+          y: (Math.random() - 0.5) * 2
+        },
+        radius: Math.random() * 3,
+        color: 'yellow'
+      });
+      particles.push(newParticle);
+    }
   }
 
   shootInvaderProjectile() {
@@ -64,6 +85,10 @@ export class Invader {
       projectile.indexInTheProjectilesArray = index;
       projectile.update();
     });
+  }
+
+  updateExplosionParticles() {
+    this.explosionParticles.forEach(particle => particle.update());
   }
 
   updatePosition() {
